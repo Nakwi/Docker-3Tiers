@@ -1,0 +1,64 @@
+version: "3.8"
+services:
+  glpi:
+    build:
+      context: ./glpi
+    container_name: tp-glpi-1
+    ports:
+      - "8080:80"
+    volumes:
+      - glpi-data:/var/www/html
+    networks:
+      - frontend-network
+      - bdd-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://192.168.0.157:8080/glpi"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  mariadb:
+    image: mariadb:10.6
+    container_name: tp-mariadb-1
+    ports:
+      - "3306:3306"
+    environment:
+      MYSQL_ROOT_PASSWORD: rootpassword
+      MYSQL_DATABASE: glpidb
+      MYSQL_USER: glpiuser
+      MYSQL_PASSWORD: glpipassword
+    volumes:
+      - db-data:/var/lib/mysql
+    networks:
+      - bdd-network
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "127.0.0.1", "-u", "root", "--password=rootpassword"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  uptime-kuma:
+    image: louislam/uptime-kuma:latest
+    container_name: tp-uptime-kuma-1
+    ports:
+      - "3001:3001"
+    volumes:
+      - uptime-kuma-data:/app/data
+    networks:
+      - backend-network
+      - frontend-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://192.168.0.157:3001/dashboard"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+networks:
+  frontend-network:
+  backend-network:
+  bdd-network:
+
+volumes:
+  db-data:
+  uptime-kuma-data:
+  glpi-data:
