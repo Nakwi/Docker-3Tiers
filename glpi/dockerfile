@@ -1,0 +1,33 @@
+# Base image
+FROM php:8.1-apache
+
+# Mettre à jour le système et installer les dépendances nécessaires pour GLPI
+RUN apt-get update && apt-get install -y \
+    libpng-dev \
+    libjpeg-dev \
+    libfreetype6-dev \
+    zlib1g-dev \
+    libzip-dev \
+    libicu-dev \
+    libbz2-dev \
+    libldap2-dev \
+    unzip \
+    wget \
+    iputils-ping \
+    && docker-php-ext-configure gd --with-freetype --with-jpeg \
+    && docker-php-ext-install gd \
+    && docker-php-ext-install mysqli zip intl bz2 ldap exif opcache
+
+# Télécharger GLPI
+RUN wget https://github.com/glpi-project/glpi/releases/download/10.0.17/glpi-10.0.17.tgz \
+    && tar -xzf glpi-10.0.17.tgz -C /var/www/html \
+    && rm glpi-10.0.17.tgz
+
+# Configurer les permissions
+RUN chown -R www-data:www-data /var/www/html/glpi && chmod -R 775 /var/www/html/glpi
+
+# Exposer le port Apache
+EXPOSE 80
+
+# Commande par défaut
+CMD ["apache2-foreground"]
