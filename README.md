@@ -360,6 +360,17 @@ volumes:
 
 ---
 
+### 4. **Uptime Kuma**
+
+    Image : httpd:latest
+    Nom du Conteneur : tp-apache-frontend
+    Ports :
+        Redirection du port 80 du conteneur vers le port 4000 de l'hôte.
+    Volumes :
+        Mappage des fichiers HTML depuis /home/ryan/TP/apache ou via un volume nommé apache-data.
+    Réseaux :
+        Connecté au réseau frontend-network.
+
 ## Volumes
 
 Des volumes sont utilisés pour assurer la persistance des données :
