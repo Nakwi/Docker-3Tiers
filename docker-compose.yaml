@@ -12,7 +12,7 @@ services:
       - frontend-network
       - bdd-network
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://192.168.0.157:8080/glpi"]
+      test: ["CMD", "curl", "-f", "http://192.168.0.157/glpi"]
       interval: 30s
       timeout: 10s
       retries: 3
@@ -32,7 +32,7 @@ services:
     networks:
       - bdd-network
     healthcheck:
-      test: ["CMD", "mysqladmin", "ping", "-h", "127.0.0.1", "-u", "root", "--password=rootpassword"]
+      test: ["CMD", "mysqladmin", "ping", "-h", "192.168.0.157", "-u", "root", "--password=rootpassword"]
       interval: 30s
       timeout: 10s
       retries: 3
@@ -53,6 +53,21 @@ services:
       timeout: 10s
       retries: 3
 
+  apache:
+    image: httpd:latest
+    container_name: tp-apache-frontend
+    ports:
+      - "4000:80"
+    volumes:
+      - /home/ryan/TP/apache:/usr/local/apache2/htdocs/
+    networks:
+      - frontend-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://192.168.0.157:4000/index.html"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
 networks:
   frontend-network:
   backend-network:
@@ -62,3 +77,4 @@ volumes:
   db-data:
   uptime-kuma-data:
   glpi-data:
+  
