@@ -315,3 +315,32 @@ volumes:
   glpi-data:
   
 ```
+---
+
+### **MariaDB**
+- **Image** : `mariadb:10.6`
+- **Conteneur** : `tp-mariadb-1`
+- **Ports** : Redirige le port `3306` du conteneur vers le port `3306` de l'hôte.
+- **Variables d'environnement** :
+  - `MYSQL_ROOT_PASSWORD` : Mot de passe root.
+  - `MYSQL_DATABASE` : Base de données utilisée par GLPI.
+  - `MYSQL_USER` et `MYSQL_PASSWORD` : Identifiants de l'utilisateur GLPI.
+- **Volumes** : 
+  - Utilise le volume `db-data` pour stocker les données de la base dans `/var/lib/mysql`.
+- **Réseaux** :
+  - Connecté uniquement au réseau interne `bdd-network` pour la sécurité.
+- **Healthcheck** :
+  - Vérifie que le service MySQL répond aux commandes en ligne via `mysqladmin`.
+
+---
+
+## Volumes
+
+Des volumes sont utilisés pour assurer la persistance des données :
+- **`db-data`** : Stocke les données de MariaDB.
+- **`uptime-kuma-data`** : Stocke les configurations et logs d'Uptime Kuma.
+- **`glpi-data`** : Stocke les fichiers nécessaires au fonctionnement de GL
+
+## Conclusion
+
+Cette configuration Docker Compose met en place une infrastructure robuste et bien isolée pour gérer une application 3-tiers avec GLPI, MariaDB, Uptime Kuma & un frontend Apache. Grâce à l'utilisation de réseaux dédiés, de volumes persistants, sauvegarde automatique et de healthchecks.
