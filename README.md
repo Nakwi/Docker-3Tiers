@@ -1,12 +1,14 @@
 # Introduction
 
-Ce projet a pour objectif de mettre en place une infrastructure Docker pour héberger une application 3-tiers. Nous avons déployé un système composé des services suivants :
+Ce projet a pour objectif de mettre en place une infrastructure Docker pour héberger une application 3-tiers et un tableau de bord centralisé. Nous avons déployé un système composé des services suivants :
 
 - **GLPI** : Une application de gestion de parc informatique.
 - **MariaDB** : La base de données pour stocker les informations de GLPI.
 - **Uptime Kuma** : Un outil de monitoring pour surveiller l'état des services.
+- **Frontend (Apache)** : Un tableau de bord centralisé pour accéder facilement aux services.
 
-L'architecture repose sur Docker Compose, avec des conteneurs interagissant dans un environnement réseau dédié pour garantir l'isolation et la sécurité des services. Un script de sauvegarde automatisé a également été mis en place pour garantir la pérennité des données et des healthcheck.
+L'architecture repose sur Docker Compose, avec des conteneurs interagissant dans un environnement réseau dédié pour garantir l'isolation et la sécurité des services. Un script de sauvegarde automatisé a également été mis en place pour garantir la pérennité des données et des healthchecks.
+
 
 ---
 
@@ -16,33 +18,37 @@ L'architecture repose sur Docker Compose, avec des conteneurs interagissant dans
 
 Le projet repose sur une architecture modulaire et bien isolée :
 
-- Chaque service est encapsulé dans un conteneur.
-- Des réseaux spécifiques gèrent les communications tout en limitant les interactions indésirables.
-- Les volumes Docker assurent la persistance des données critiques.
+- **Encapsulation des services** : Chaque service est encapsulé dans un conteneur Docker.
+- **Tableau de bord centralisé** : Un frontend permet d'accéder facilement aux différents services.
+- **Réseaux spécifiques** : Des réseaux dédiés gèrent les communications entre les services tout en limitant les interactions indésirables.
+- **Persistance des données** : Les volumes Docker garantissent la sauvegarde et la persistance des données critiques.
 
 
 ---
 
-## Structure réseau
+## Structure Réseau
 
 Pour garantir une isolation adéquate, les réseaux suivants ont été créés :
 
-- **frontend-network** : Permet aux utilisateurs d'accéder à GLPI et Uptime Kuma.
-- **bdd-network** : Relie GLPI et MariaDB de manière sécurisée, empêchant l'accès externe à la base de données.
+- **frontend-network** : Permet aux utilisateurs d'accéder à GLPI, Uptime Kuma, et au tableau de bord centralisé.
+- **bdd-network** : Relie GLPI et MariaDB de manière sécurisée, empêchant tout accès externe à la base de données.
 - **backend-network** : Permet les communications internes pour le monitoring de Uptime Kuma.
+
 
 ---
 
-## Schéma de connectivité
+## Schéma de Connectivité
 
-| Source        | Destination    | Ping possible ? |
-|---------------|----------------|-----------------|
-| **GLPI**      | **MariaDB**    | ✅ Oui          |
-| **GLPI**      | **Uptime Kuma**| ✅ Oui          |
-| **MariaDB**   | **GLPI**       | ✅ Oui          |
-| **MariaDB**   | **Uptime Kuma**| ❌ Non          |
-| **Uptime Kuma**| **GLPI**      | ✅ Oui (HTTP)   |
-| **Uptime Kuma**| **MariaDB**   | ❌ Non          |
+| **Source**      | **Destination** | **Ping possible ?** |
+|------------------|-----------------|----------------------|
+| **GLPI**         | **MariaDB**     | ✅ Oui              |
+| **GLPI**         | **Uptime Kuma** | ✅ Oui              |
+| **MariaDB**      | **GLPI**        | ✅ Oui              |
+| **MariaDB**      | **Uptime Kuma** | ❌ Non              |
+| **Uptime Kuma**  | **GLPI**        | ✅ Oui (HTTP)       |
+| **Uptime Kuma**  | **MariaDB**     | ❌ Non              |
+| **Frontend**     | **GLPI**        | ✅ Oui              |
+| **Frontend**     | **Uptime Kuma** | ✅ Oui              |
 
 ---
 
@@ -50,15 +56,25 @@ Pour garantir une isolation adéquate, les réseaux suivants ont été créés :
 
 ## Arborescence
 
-Le projet est structuré pour séparer les configurations, les scripts, et les sauvegardes. Le fichier `docker-compose.yaml` orchestre les conteneurs, tandis que les dossiers `glpi/`, `backup/`, et `docker-backups/` gèrent respectivement l'image GLPI, les scripts de sauvegarde, et les données archivées.
+Le projet est structuré pour séparer les configurations, les scripts, et les sauvegardes. Voici l'organisation des fichiers et dossiers principaux :
+
+- **`docker-compose.yaml`** : Orchestre les conteneurs et définit les réseaux, volumes, et services.
+- **`glpi/`** : Contient les fichiers nécessaires pour construire l'image Docker de GLPI.
+- **`backup/`** : Regroupe les scripts pour les sauvegardes automatisées.
+- **`docker-backups/`** : Stocke les données archivées et les snapshots de sauvegarde.
+
+Cette structure facilite la maintenance et l'évolutivité du projet.
 
 ```
 ├── docker-compose.yaml
 ├── glpi/
-│   └── dockerfile
+│   └── Dockerfile
+├── apache-html/
+│   └── index.html
 ├── backup/
 │   └── backup_volumes.sh
 └── docker-backups/
+
 ```
 
 # 2. Image Docker GLPI
