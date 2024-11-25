@@ -1,87 +1,91 @@
-# Introduction
+# 🚀 Introduction
 
-Ce projet a pour objectif de mettre en place une infrastructure Docker pour héberger une application 3-tiers et un tableau de bord centralisé. Nous avons déployé un système composé des services suivants :
+Ce projet a pour objectif de mettre en place une infrastructure Docker pour héberger une application 3-tiers avec un tableau de bord centralisé et un service frontend. J'ai déployé un système composé des services suivants :
 
 - **GLPI** : Une application de gestion de parc informatique.
 - **MariaDB** : La base de données pour stocker les informations de GLPI.
 - **Uptime Kuma** : Un outil de monitoring pour surveiller l'état des services.
-- **Frontend (Apache)** : Un tableau de bord centralisé pour accéder facilement aux services.
+- **Apache (Frontend)** : Un serveur web fournissant un tableau de bord centralisé pour accéder aux services.
 
-L'architecture repose sur Docker Compose, avec des conteneurs interagissant dans un environnement réseau dédié pour garantir l'isolation et la sécurité des services. Un script de sauvegarde automatisé a également été mis en place pour garantir la pérennité des données et des healthchecks.
-
+L'architecture repose sur **Docker Compose**, avec des conteneurs interagissant dans un environnement réseau dédié pour garantir l'isolation et la sécurité des services. Un script de sauvegarde automatisé a également été mis en place pour garantir la pérennité des données et des *healthchecks*.
 
 ---
 
-# Architecture du Projet
+# 🏗️ Architecture du Projet
 
 ## Description générale
 
 Le projet repose sur une architecture modulaire et bien isolée :
 
 - **Encapsulation des services** : Chaque service est encapsulé dans un conteneur Docker.
-- **Tableau de bord centralisé** : Un frontend permet d'accéder facilement aux différents services.
+- **Tableau de bord centralisé** : Le serveur Apache permet d'accéder facilement aux différents services.
 - **Réseaux spécifiques** : Des réseaux dédiés gèrent les communications entre les services tout en limitant les interactions indésirables.
-- **Persistance des données** : Les volumes Docker garantissent la sauvegarde et la persistance des données critiques.
-
+- **Persistance des données** : Les volumes Docker garantissent la sauvegarde et la pérennité des données critiques.
 
 ---
 
-## Structure Réseau
+## 🌐 Structure Réseau
 
 Pour garantir une isolation adéquate, les réseaux suivants ont été créés :
 
-- **frontend-network** : Permet aux utilisateurs d'accéder à GLPI, Uptime Kuma, et au tableau de bord centralisé.
+- **frontend-network** : Permet aux utilisateurs d'accéder à GLPI, Uptime Kuma, et au serveur Apache (frontend).
 - **bdd-network** : Relie GLPI et MariaDB de manière sécurisée, empêchant tout accès externe à la base de données.
-- **backend-network** : Permet les communications internes pour le monitoring de Uptime Kuma.
-
+- **backend-network** : Permet les communications internes pour le monitoring avec Uptime Kuma.
 
 ---
 
 ## Schéma de Connectivité
 
-| **Source**      | **Destination** | **Ping possible ?** |
-|------------------|-----------------|----------------------|
-| **GLPI**         | **MariaDB**     | ✅ Oui              |
-| **GLPI**         | **Uptime Kuma** | ✅ Oui              |
-| **MariaDB**      | **GLPI**        | ✅ Oui              |
-| **MariaDB**      | **Uptime Kuma** | ❌ Non              |
-| **Uptime Kuma**  | **GLPI**        | ✅ Oui (HTTP)       |
-| **Uptime Kuma**  | **MariaDB**     | ❌ Non              |
-| **Frontend**     | **GLPI**        | ✅ Oui              |
-| **Frontend**     | **Uptime Kuma** | ✅ Oui              |
+| Source         | Destination  | Ping possible ? |
+|----------------|--------------|-----------------|
+| **GLPI**       | MariaDB      | ✅ Oui          |
+| **GLPI**       | Uptime Kuma  | ✅ Oui          |
+| **MariaDB**    | GLPI         | ✅ Oui          |
+| **MariaDB**    | Uptime Kuma  | ❌ Non          |
+| **Uptime Kuma**| GLPI         | ✅ Oui (HTTP)   |
+| **Uptime Kuma**| MariaDB      | ❌ Non          |
+| **Frontend**   | GLPI         | ✅ Oui          |
+| **Frontend**   | Uptime Kuma  | ✅ Oui          |
+| **Frontend**   | MariaDB      | ❌ Non          |
 
 ---
 
-# 1. Structure du Projet
+# 📜 Structure du Projet
 
 ## Arborescence
 
-Le projet est structuré pour séparer les configurations, les scripts, et les sauvegardes. Voici l'organisation des fichiers et dossiers principaux :
+Le projet est structuré pour séparer les configurations, les scripts et les sauvegardes. Voici l'organisation des fichiers et dossiers principaux :
 
-- **`docker-compose.yaml`** : Orchestre les conteneurs et définit les réseaux, volumes, et services.
-- **`glpi/`** : Contient les fichiers nécessaires pour construire l'image Docker de GLPI.
-- **`backup/`** : Regroupe les scripts pour les sauvegardes automatisées.
-- **`docker-backups/`** : Stocke les données archivées et les snapshots de sauvegarde.
-
-Cette structure facilite la maintenance et l'évolutivité du projet.
-
+```plaintext
+├── docker-compose.yaml        
+├── glpi/                        
+│   └── Dockerfile               
+├── apache/                 
+│   └── index.html               
+├── backup/                      
+│   └── backup_volumes.sh        
+└── docker-backups/ 
 ```
-├── docker-compose.yaml
-├── glpi/
-│   └── Dockerfile
-├── apache-html/
-│   └── index.html
-├── backup/
-│   └── backup_volumes.sh
-└── docker-backups/
+# 📂 Structure des Fichiers
 
+- **docker-compose.yaml** : Orchestre les conteneurs et définit les réseaux, volumes, et services.
+- **glpi/** : Contient les fichiers nécessaires pour construire l'image Docker de GLPI.
+- **apache-html/** : Contient les fichiers statiques pour le serveur Apache (comme `index.html`).
+- **backup/** : Regroupe les scripts pour les sauvegardes automatisées.
+- **docker-backups/** : Stocke les données archivées et les snapshots de sauvegarde.
+
+---
+
+# Détails des Services
+
+## 1. 🎫 Image Docker GLPI
+
+Le conteneur **GLPI** est construit à partir d’un Dockerfile personnalisé. Ce fichier intègre les éléments suivants :
+
+- **Dépendances nécessaires** : Installation des extensions PHP requises.
+- **Téléchargement** : Récupération de la dernière version stable de GLPI.
+- **Configuration des permissions** : Configuration des droits pour assurer le bon fonctionnement de l'application.
 ```
-
-# 2. Image Docker GLPI
-
-Le conteneur GLPI est construit à partir d’un Dockerfile personnalisé. Ce fichier intègre les dépendances nécessaires, télécharge la dernière version stable de GLPI et configure les permissions :
-
-```dockerfile
 # Base image
 FROM php:8.1-apache
 
@@ -116,65 +120,109 @@ EXPOSE 80
 # Commande par défaut
 CMD ["apache2-foreground"]
 ```
-# 3. Healthcheck
-
-Des **healthchecks** ont été ajoutés pour chaque conteneur afin de surveiller leur état. Ces tests permettent de valider automatiquement le bon fonctionnement des services :
-
-- **GLPI** : Vérifie que le service est accessible via HTTP.
-- **MariaDB** : Vérifie que le service de base de données répond aux commandes.
-- **Uptime Kuma** : Vérifie l'accès au tableau de bord via HTTP.
-
-Voici un exemple de configuration de healthcheck pour vérifier l'accès au tableau de bord d'Uptime Kuma :
-```yaml
-healthcheck:
-  test: ["CMD", "curl", "-f", "http://192.168.0.157:3001/dashboard"]
-  interval: 30s
-  timeout: 10s
-  retries: 3
-```
-### Détails de la configuration :
-
-- **test** : Commande exécutée pour vérifier si le service est fonctionnel (dans cet exemple, une requête HTTP via `curl`).
-- **interval** : Intervalle entre deux exécutions du healthcheck (30 secondes).
-- **timeout** : Délai maximum avant qu'une tentative ne soit considérée comme échouée (10 secondes).
-- **retries** : Nombre de tentatives avant de considérer le service comme défaillant (3 fois).
-
-# 4. Script de Sauvegarde
-
-Un script de sauvegarde automatisé a été créé pour préserver les données critiques des volumes Docker. Il archive chaque volume dans un dossier dédié.
 
 ---
 
-## Contenu du script
+## 2. 🔗 Image Docker Apache
 
-```bash
+Le service **Apache** est basé sur l'image officielle `httpd`. Voici les détails de la configuration :
+
+### Configuration du Service Apache
+
+- **Image** : `httpd:latest`
+- **Nom du Conteneur** : `tp-apache-frontend`
+- **Ports** : 
+  - Redirection du port `80` du conteneur vers le port `4000` de l'hôte.
+- **Volumes** :
+  - Mappage des fichiers HTML depuis `/home/ryan/TP/apache` ou via un volume nommé `apache-data`.
+- **Réseaux** :
+  - Connecté au réseau `frontend-network`.
+
+Cette configuration permet de personnaliser facilement le tableau de bord centralisé, accessible via le serveur Apache.
+```
+  apache:
+    image: httpd:latest
+    container_name: tp-apache-frontend
+    ports:
+      - "4000:80"
+    volumes:
+      - /home/ryan/TP/apache:/usr/local/apache2/htdocs/
+    networks:
+      - frontend-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://192.168.0.157:4000/index.html"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+```
+![image](https://github.com/user-attachments/assets/30053ae2-cbde-42f9-893e-6358b3fc106b)
+## 3. 🩺 Healthchecks
+
+Des *healthchecks* ont été ajoutés pour chaque conteneur afin de surveiller leur état et garantir leur bon fonctionnement. Voici les vérifications effectuées :
+
+- **GLPI** : Vérifie que l'interface web est accessible via HTTP.
+- **MariaDB** : Vérifie que le service de base de données répond aux connexions.
+- **Uptime Kuma** : Vérifie que le tableau de bord est accessible.
+- **Apache** : Vérifie que le tableau de bord centralisé est accessible.
+
+### Exemple de Configuration d'un Healthcheck
+
+Voici un exemple de configuration pour vérifier l'accès au tableau de bord d'**Uptime Kuma** :
+```
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://192.168.0.157:3001/dashboard"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+```
+## 4. 💾 Script de Sauvegarde
+
+Un script de sauvegarde automatisé a été mis en place pour préserver les données critiques de tous les volumes Docker, y compris celui utilisé par le serveur Apache.
+
+### Fonctionnalités du Script
+
+- Sauvegarde des volumes Docker dans un dossier dédié (`docker-backups`).
+- Compression des données pour économiser de l'espace disque.
+- Planification possible via **cron** pour des sauvegardes régulières.
+- Logs générés pour suivre l'état des sauvegardes.
+
+```
 #!/bin/bash
 
+# Répertoire de sauvegarde
 BACKUP_DIR="/home/ryan/TP/docker-backups"
 DATE=$(date +'%Y-%m-%d')
 
+# Liste des volumes Docker à sauvegarder
 VOLUMES=("tp_db-data" "tp_uptime-kuma-data" "glpi-data")
 
+# Fichier spécifique à sauvegarder
+APACHE_FILE="/home/ryan/TP/apache/index.html"
+
+# Création du répertoire de sauvegarde s'il n'existe pas
 mkdir -p "$BACKUP_DIR"
 
+# Sauvegarde des volumes Docker
 for VOLUME in "${VOLUMES[@]}"; do
     echo "Sauvegarde du volume $VOLUME..."
     docker run --rm \
         -v ${VOLUME}:/volume \
         -v ${BACKUP_DIR}:/backup \
         alpine \
+        tar czf /backup/${VOLUME}_${DATE}.tar.gz -C /volume .
+done
+
+# Sauvegarde du fichier Apache
+if [ -f "$APACHE_FILE" ]; then
+    echo "Sauvegarde du fichier Apache : $APACHE_FILE..."
+    tar czf "$BACKUP_DIR/apache_index_${DATE}.tar.gz" -C "$(dirname "$APACHE_FILE")" "$(basename "$APACHE_FILE")"
+else
+    echo "Fichier Apache non trouvé : $APACHE_FILE"
+fi
+
+echo "Sauvegarde terminée ! Les fichiers sont dans $BACKUP_DIR"
+
 ```
-## Fonctionnement du Script
-
-Ce script sauvegarde les 3 volumes associés aux 3 conteneurs suivants :
-
-- **GLPI** : Volume `glpi-data`
-- **MariaDB** : Volume `tp_db-data`
-- **Uptime Kuma** : Volume `tp_uptime-kuma-data`
-
-Les sauvegardes sont stockées dans le dossier suivant :  
-`/home/ryan/TP/docker-backups`.
-
 ### Automatisation avec Cron
 
 Pour automatiser cette tâche, une ligne de commande Cron a été ajoutée. Elle exécute le script tous les jours à 3h du matin :
@@ -182,8 +230,7 @@ Pour automatiser cette tâche, une ligne de commande Cron a été ajoutée. Elle
 ```bash
 0 3 * * * /bin/bash /home/ryan/TP/Backup/backup_volumes.sh
 ```
-
-# Docker Compose Configuration
+# 🖧 Docker Compose Configuration
 
 Voici la configuration `docker-compose.yaml` utilisée pour orchestrer les conteneurs et gérer les services dans un environnement 3-tiers. 
 ```
@@ -201,7 +248,7 @@ services:
       - frontend-network
       - bdd-network
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://192.168.0.157:8080/glpi"]
+      test: ["CMD", "curl", "-f", "http://192.168.0.157/glpi"]
       interval: 30s
       timeout: 10s
       retries: 3
@@ -221,7 +268,7 @@ services:
     networks:
       - bdd-network
     healthcheck:
-      test: ["CMD", "mysqladmin", "ping", "-h", "127.0.0.1", "-u", "root", "--password=rootpassword"]
+      test: ["CMD", "mysqladmin", "ping", "-h", "192.168.0.157", "-u", "root", "--password=rootpassword"]
       interval: 30s
       timeout: 10s
       retries: 3
@@ -242,6 +289,21 @@ services:
       timeout: 10s
       retries: 3
 
+  apache:
+    image: httpd:latest
+    container_name: tp-apache-frontend
+    ports:
+      - "4000:80"
+    volumes:
+      - /home/ryan/TP/apache:/usr/local/apache2/htdocs/
+    networks:
+      - frontend-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://192.168.0.157:4000/index.html"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
 networks:
   frontend-network:
   backend-network:
@@ -251,63 +313,5 @@ volumes:
   db-data:
   uptime-kuma-data:
   glpi-data:
+  
 ```
-
-## Services Configurés
-
-### 1. **GLPI**
-- **Build** : Construit à partir d'un Dockerfile personnalisé situé dans le dossier `./glpi`.
-- **Conteneur** : `tp-glpi-1`
-- **Ports** : Redirige le port `80` du conteneur vers le port `8080` de l'hôte.
-- **Volumes** : 
-  - Utilise le volume `glpi-data` pour stocker les fichiers persistants dans `/var/www/html`.
-- **Réseaux** :
-  - Connecté au réseau public `frontend-network`.
-  - Connecté au réseau interne `bdd-network` pour communiquer avec MariaDB.
-- **Healthcheck** :
-  - Vérifie que l'interface web de GLPI est accessible via HTTP à l'adresse `http://192.168.0.157:8080/glpi`.
-
----
-
-### 2. **MariaDB**
-- **Image** : `mariadb:10.6`
-- **Conteneur** : `tp-mariadb-1`
-- **Ports** : Redirige le port `3306` du conteneur vers le port `3306` de l'hôte.
-- **Variables d'environnement** :
-  - `MYSQL_ROOT_PASSWORD` : Mot de passe root.
-  - `MYSQL_DATABASE` : Base de données utilisée par GLPI.
-  - `MYSQL_USER` et `MYSQL_PASSWORD` : Identifiants de l'utilisateur GLPI.
-- **Volumes** : 
-  - Utilise le volume `db-data` pour stocker les données de la base dans `/var/lib/mysql`.
-- **Réseaux** :
-  - Connecté uniquement au réseau interne `bdd-network` pour la sécurité.
-- **Healthcheck** :
-  - Vérifie que le service MySQL répond aux commandes en ligne via `mysqladmin`.
-
----
-
-### 3. **Uptime Kuma**
-- **Image** : `louislam/uptime-kuma:latest`
-- **Conteneur** : `tp-uptime-kuma-1`
-- **Ports** : Redirige le port `3001` du conteneur vers le port `3001` de l'hôte.
-- **Volumes** :
-  - Utilise le volume `uptime-kuma-data` pour stocker les configurations dans `/app/data`.
-- **Réseaux** :
-  - Connecté au réseau public `frontend-network`.
-  - Connecté au réseau interne `backend-network` pour le monitoring.
-- **Healthcheck** :
-  - Vérifie l'accès au tableau de bord via HTTP à l'adresse `http://192.168.0.157:3001/dashboard`.
-
----
-
-## Volumes
-
-Des volumes sont utilisés pour assurer la persistance des données :
-- **`db-data`** : Stocke les données de MariaDB.
-- **`uptime-kuma-data`** : Stocke les configurations et logs d'Uptime Kuma.
-- **`glpi-data`** : Stocke les fichiers nécessaires au fonctionnement de GLPI.
-
-## Conclusion
-
-Cette configuration Docker Compose met en place une infrastructure robuste et bien isolée pour gérer une application 3-tiers avec GLPI, MariaDB et Uptime Kuma. Grâce à l'utilisation de réseaux dédiés, de volumes persistants, sauvegarde automatique et de healthchecks.
-
