@@ -365,7 +365,7 @@ volumes:
 Des volumes sont utilisés pour assurer la persistance des données :
 - **`db-data`** : Stocke les données de MariaDB.
 - **`uptime-kuma-data`** : Stocke les configurations et logs d'Uptime Kuma.
-- **`glpi-data`** : Stocke les fichiers nécessaires au fonctionnement de GL
+- **`glpi-data`** : Stocke les fichiers nécessaires au fonctionnement de GLPI
 
 ## Conclusion
 
