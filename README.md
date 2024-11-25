@@ -315,9 +315,21 @@ volumes:
   glpi-data:
   
 ```
+### 1. **GLPI**
+- **Build** : Construit à partir d'un Dockerfile personnalisé situé dans le dossier `./glpi`.
+- **Conteneur** : `tp-glpi-1`
+- **Ports** : Redirige le port `80` du conteneur vers le port `8080` de l'hôte.
+- **Volumes** : 
+  - Utilise le volume `glpi-data` pour stocker les fichiers persistants dans `/var/www/html`.
+- **Réseaux** :
+  - Connecté au réseau public `frontend-network`.
+  - Connecté au réseau interne `bdd-network` pour communiquer avec MariaDB.
+- **Healthcheck** :
+  - Vérifie que l'interface web de GLPI est accessible via HTTP à l'adresse `http://192.168.0.157:8080/glpi`.
+
 ---
 
-### **MariaDB**
+### 2. **MariaDB**
 - **Image** : `mariadb:10.6`
 - **Conteneur** : `tp-mariadb-1`
 - **Ports** : Redirige le port `3306` du conteneur vers le port `3306` de l'hôte.
@@ -331,6 +343,20 @@ volumes:
   - Connecté uniquement au réseau interne `bdd-network` pour la sécurité.
 - **Healthcheck** :
   - Vérifie que le service MySQL répond aux commandes en ligne via `mysqladmin`.
+
+---
+
+### 3. **Uptime Kuma**
+- **Image** : `louislam/uptime-kuma:latest`
+- **Conteneur** : `tp-uptime-kuma-1`
+- **Ports** : Redirige le port `3001` du conteneur vers le port `3001` de l'hôte.
+- **Volumes** :
+  - Utilise le volume `uptime-kuma-data` pour stocker les configurations dans `/app/data`.
+- **Réseaux** :
+  - Connecté au réseau public `frontend-network`.
+  - Connecté au réseau interne `backend-network` pour le monitoring.
+- **Healthcheck** :
+  - Vérifie l'accès au tableau de bord via HTTP à l'adresse `http://192.168.0.157:3001/dashboard`.
 
 ---
 
