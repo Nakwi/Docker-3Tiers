@@ -84,6 +84,7 @@ nginx:
     - frontend-network
 ```
 
+![image](https://github.com/user-attachments/assets/5132873f-2312-46e7-9af4-d933607ac4f7)
 
 
 ### Image
