@@ -38,13 +38,7 @@ Chaque service est connecté à un ou plusieurs réseaux en fonction de ses beso
 | **GLPI**           | ✅                   | ✅                  | ✅              | Nginx (Frontend), MariaDB (BDD), Uptime Kuma (Backend) |
 | **MariaDB**        | ❌                   | ❌                  | ✅              | GLPI (via BDD-Network)                                |
 | **Uptime Kuma**    | ✅                   | ✅                  | ❌              | GLPI (via Backend-Network)                            |
----
-#### Schéma des réseaux et communication
 
-- **Nginx** : Accessible depuis le réseau Frontend-Network pour rediriger les requêtes vers GLPI.
-- **GLPI** : Pont entre les trois réseaux pour interagir avec le proxy (Frontend-Network), la base de données (BDD-Network), et le monitoring (Backend-Network).
-- **MariaDB** : Complètement isolée à l'intérieur du BDD-Network, accessible uniquement par GLPI.
-- **Uptime Kuma** : Présent dans le Backend-Network et Frontend-Network pour le monitoring et l'accès utilisateur.
 ---
 ## 🏗️ Structure du Projet
 
@@ -137,6 +131,11 @@ glpi:
 ### Nom du conteneur
 - **Nom :**  
   Le conteneur est nommé **`tp-glpi-1`** pour une identification simple dans l'infrastructure Docker. Ce nom facilite la gestion et le débogage des conteneurs.
+
+### Ports
+- **Configuration :**  
+  Pas de port configuré car il utilise le reverse proxy de Nginx (donc son port) :  
+  `http://<adresse-ip-du-serveur>:4000/glpi/`
 
 ### Volumes
 - **Configuration :**  
